@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { ListingForm } from "./ListingForm";
 
@@ -22,8 +21,9 @@ type Props = {
 };
 
 export function ListingsClient({ initialListings, fuelTypes }: Props) {
-  const [listings, setListings] = useState(initialListings);
   const utils = trpc.useUtils();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: listings = [] } = trpc.dealerListings.list.useQuery(undefined, { initialData: initialListings as any });
   const removeListing = trpc.dealerListings.remove.useMutation({
     onSuccess: () => utils.dealerListings.list.invalidate(),
   });
@@ -36,7 +36,6 @@ export function ListingsClient({ initialListings, fuelTypes }: Props) {
   async function handleRemove(id: string) {
     if (!confirm("Angebot wirklich löschen?")) return;
     await removeListing.mutateAsync({ id });
-    setListings((prev) => prev.filter((l) => l.id !== id));
   }
 
   return (

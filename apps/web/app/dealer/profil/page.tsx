@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function ProfilPage() {
+  const router = useRouter();
   const { data: dealer, isLoading, refetch } = trpc.dealer.me.useQuery();
   const updateDealer = trpc.dealer.update.useMutation({ onSuccess: () => refetch() });
 
@@ -25,6 +27,12 @@ export default function ProfilPage() {
       setLogo(dealer.logo ?? "");
     }
   }, [dealer]);
+
+  useEffect(() => {
+    if (!isLoading && !dealer) {
+      router.push("/dealer/onboarding");
+    }
+  }, [isLoading, dealer, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
