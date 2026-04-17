@@ -1,7 +1,11 @@
-import { Button } from "@/components/ui/button";
+import { createServerClient } from "@/lib/trpc/server";
+import { CompareForm } from "./vergleich/CompareForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const trpcServer = await createServerClient();
+  const fuelTypes = await trpcServer.fuelTypes.list();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
       <div className="text-center">
@@ -10,17 +14,12 @@ export default function HomePage() {
           Energiepreise vergleichen — Pellets, Heizöl, Gas & mehr
         </p>
       </div>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Jetzt vergleichen</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Vergleichsrechner kommt in Plan 2.
-          </p>
-          <Button className="mt-4 w-full" disabled>
-            Preise vergleichen (bald verfügbar)
-          </Button>
+          <CompareForm fuelTypes={fuelTypes} />
         </CardContent>
       </Card>
     </main>
