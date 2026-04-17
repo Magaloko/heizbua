@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { deDE } from "@clerk/localizations";
+import { TRPCReactProvider } from "@/lib/trpc/provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <ClerkProvider localization={deDE}>
       <html lang="de">
-        <body>{children}</body>
+        <body>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </body>
       </html>
     </ClerkProvider>
   );
