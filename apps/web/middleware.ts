@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isProtectedDealer = createRouteMatcher([
   "/dealer/dashboard(.*)",
@@ -10,7 +11,10 @@ const isProtectedAdmin = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedDealer(req) || isProtectedAdmin(req)) {
-    await auth.protect();
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.redirect(new URL("/dealer/login", req.url));
+    }
   }
 });
 
