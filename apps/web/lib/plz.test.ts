@@ -16,12 +16,16 @@ describe("isValidPlzFormat", () => {
 });
 
 describe("fetchPlzInfo", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("returns PlzInfo on valid API response", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => [{ zipCode: "80331", name: "München", federalState: { name: "Bayern" } }],
     });
-    global.fetch = mockFetch as unknown as typeof fetch;
+    vi.stubGlobal("fetch", mockFetch);
 
     const result = await fetchPlzInfo("80331");
     expect(result).toMatchObject<PlzInfo>({
@@ -35,17 +39,23 @@ describe("fetchPlzInfo", () => {
   });
 
   it("returns null when PLZ not found", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => [],
-    }) as unknown as typeof fetch;
+    }));
 
     const result = await fetchPlzInfo("99999");
     expect(result).toBeNull();
   });
 
   it("returns null on fetch error", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("network error")) as unknown as typeof fetch;
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network error")));
+    const result = await fetchPlzInfo("80331");
+    expect(result).toBeNull();
+  });
+
+  it("returns null on non-ok HTTP response", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     const result = await fetchPlzInfo("80331");
     expect(result).toBeNull();
   });
