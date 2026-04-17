@@ -42,7 +42,7 @@ describe("leads.create", () => {
       caller.create({
         listingId: "listing-1",
         sessionToken: "sess-abc",
-        plz: "1234",
+        plz: "123",
         quantity: 1000,
         dealerWebsite: "https://example.com",
       })

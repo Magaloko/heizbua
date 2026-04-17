@@ -7,7 +7,7 @@ export const leadsRouter = router({
       z.object({
         listingId: z.string().min(1),
         sessionToken: z.string().min(1),
-        plz: z.string().regex(/^\d{5}$/),
+        plz: z.string().regex(/^\d{4,5}$/),
         quantity: z.number().int().min(1),
         dealerWebsite: z.string().url(),
       })

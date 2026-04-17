@@ -33,8 +33,8 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!/^\d{5}$/.test(plz)) {
-      setError("Bitte gültige 5-stellige PLZ eingeben");
+    if (!/^\d{4,5}$/.test(plz)) {
+      setError("Bitte gültige PLZ eingeben (z. B. 80331 oder 1100)");
       return;
     }
     const quantity = parseInt(qty, 10);
@@ -71,11 +71,11 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
           <Label htmlFor="plz">PLZ</Label>
           <Input
             id="plz"
-            placeholder="z. B. 80331"
+            placeholder="z. B. 1100 oder 80331"
             value={plz}
             onChange={(e) => setPlz(e.target.value)}
             maxLength={5}
-            pattern="\d{5}"
+            pattern="\d{4,5}"
             required
           />
         </div>

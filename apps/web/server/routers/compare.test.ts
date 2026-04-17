@@ -80,7 +80,7 @@ describe("compare.search", () => {
   it("rejects invalid PLZ format", async () => {
     const caller = createCaller(ctx);
     await expect(
-      caller.search({ plz: "1234", fuelTypeId: "fuel-1", quantity: 1000 })
+      caller.search({ plz: "123", fuelTypeId: "fuel-1", quantity: 1000 })
     ).rejects.toThrow();
   });
 

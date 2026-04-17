@@ -6,7 +6,7 @@ export const compareRouter = router({
   search: publicProcedure
     .input(
       z.object({
-        plz: z.string().regex(/^\d{5}$/, "PLZ muss 5-stellig sein"),
+        plz: z.string().regex(/^\d{4,5}$/, "PLZ muss 4- oder 5-stellig sein (AT/DE)"),
         fuelTypeId: z.string().min(1),
         quantity: z.number().int().min(1),
       })
