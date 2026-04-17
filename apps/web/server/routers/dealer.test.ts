@@ -16,8 +16,8 @@ const mockDealer = {
   website: "https://example.com",
   rating: null,
   reviewCount: 0,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: new Date("2024-01-01"),
+  updatedAt: new Date("2024-01-01"),
 };
 
 const mockPrisma = {
@@ -70,6 +70,7 @@ describe("dealer.create", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("creates dealer profile", async () => {
+    mockPrisma.dealer.findUnique.mockResolvedValue(null);
     mockPrisma.dealer.create.mockResolvedValue(mockDealer);
     const caller = createCaller(ctx);
     const result = await caller.create({
@@ -89,6 +90,49 @@ describe("dealer.create", () => {
       },
     });
   });
+
+  it("throws CONFLICT when dealer already exists", async () => {
+    mockPrisma.dealer.findUnique.mockResolvedValue(mockDealer);
+    const caller = createCaller(ctx);
+    await expect(
+      caller.create({ name: "Test Händler", email: "test@example.com", website: "https://example.com", description: null })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("throws UNAUTHORIZED when not logged in", async () => {
+    const caller = createCaller(unauthCtx);
+    await expect(
+      caller.create({ name: "X", email: "x@x.com", website: null, description: null })
+    ).rejects.toThrow("UNAUTHORIZED");
+  });
+});
+
+describe("dealer.update", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("updates dealer successfully", async () => {
+    const updatedDealer = { ...mockDealer, name: "Updated Händler" };
+    mockPrisma.dealer.findUnique.mockResolvedValue(mockDealer);
+    mockPrisma.dealer.update.mockResolvedValue(updatedDealer);
+    const caller = createCaller(ctx);
+    const result = await caller.update({ name: "Updated Händler" });
+    expect(result.name).toBe("Updated Händler");
+    expect(mockPrisma.dealer.update).toHaveBeenCalledWith({
+      where: { id: "dealer-1" },
+      data: { name: "Updated Händler" },
+    });
+  });
+
+  it("throws NOT_FOUND when no dealer exists", async () => {
+    mockPrisma.dealer.findUnique.mockResolvedValue(null);
+    const caller = createCaller(ctx);
+    await expect(caller.update({ name: "Updated" })).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("throws UNAUTHORIZED when not logged in", async () => {
+    const caller = createCaller(unauthCtx);
+    await expect(caller.update({ name: "X" })).rejects.toThrow("UNAUTHORIZED");
+  });
 });
 
 describe("dealer.stats", () => {
@@ -102,6 +146,13 @@ describe("dealer.stats", () => {
     const caller = createCaller(ctx);
     const result = await caller.stats();
     expect(result).toEqual({ listingCount: 3, zoneCount: 2, leadCount: 10 });
+    expect(mockPrisma.lead.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          clickedAt: expect.objectContaining({ gte: expect.any(Date) }),
+        }),
+      })
+    );
   });
 
   it("returns zeros when no dealer profile", async () => {

@@ -1,5 +1,8 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export const dealerRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
@@ -16,6 +19,8 @@ export const dealerRouter = router({
       description: z.string().nullable(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.dealer.findUnique({ where: { clerkUserId: ctx.userId } });
+      if (existing) throw new TRPCError({ code: "CONFLICT", message: "Händler-Profil existiert bereits" });
       return ctx.prisma.dealer.create({
         data: {
           clerkUserId: ctx.userId,
@@ -38,10 +43,15 @@ export const dealerRouter = router({
       const dealer = await ctx.prisma.dealer.findUnique({
         where: { clerkUserId: ctx.userId },
       });
-      if (!dealer) throw new Error("Kein Händler-Profil gefunden");
+      if (!dealer) throw new TRPCError({ code: "NOT_FOUND", message: "Kein Händler-Profil gefunden" });
       return ctx.prisma.dealer.update({
         where: { id: dealer.id },
-        data: input,
+        data: {
+          ...(input.name !== undefined && { name: input.name }),
+          ...(input.website !== undefined && { website: input.website }),
+          ...(input.description !== undefined && { description: input.description }),
+          ...(input.logo !== undefined && { logo: input.logo }),
+        },
       });
     }),
 
@@ -51,7 +61,7 @@ export const dealerRouter = router({
     });
     if (!dealer) return { listingCount: 0, zoneCount: 0, leadCount: 0 };
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS);
 
     const [listingCount, zoneCount, leadCount] = await Promise.all([
       ctx.prisma.priceListing.count({ where: { dealerId: dealer.id, active: true } }),
