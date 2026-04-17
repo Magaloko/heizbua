@@ -51,6 +51,9 @@ model PriceListing {
   leads        Lead[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([dealerId, active])
+  @@index([fuelTypeId, active])
 }
 
 model PostalZone {
@@ -59,6 +62,9 @@ model PostalZone {
   dealerId String
   plzFrom  String
   plzTo    String
+
+  @@index([plzFrom, plzTo])
+  @@index([dealerId])
 }
 
 model PostalCache {
@@ -79,6 +85,9 @@ model Lead {
   plz          String
   quantity     Int
   clickedAt    DateTime     @default(now())
+
+  @@index([listingId])
+  @@index([plz])
 }
 
 model PriceHistory {
@@ -88,6 +97,8 @@ model PriceHistory {
   avgPrice   Decimal
   source     String
   recordedAt DateTime @default(now())
+
+  @@index([fuelTypeId, recordedAt])
 }
 
 model EnergyConversion {
