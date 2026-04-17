@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Dealer {
+  id          String       @id @default(cuid())
+  clerkUserId String?      @unique
+  name        String
+  email       String       @unique
+  role        Role         @default(DEALER)
+  status      DealerStatus @default(PENDING)
+  logo        String?
+  description String?
+  website     String?
+  rating      Decimal?
+  reviewCount Int          @default(0)
+  listings    PriceListing[]
+  zones       PostalZone[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model FuelType {
+  id         String             @id @default(cuid())
+  slug       String             @unique
+  label      String
+  unit       String
+  listings   PriceListing[]
+  history    PriceHistory[]
+  conversion EnergyConversion?
+}
+
+model PriceListing {
+  id           String    @id @default(cuid())
+  dealer       Dealer    @relation(fields: [dealerId], references: [id])
+  dealerId     String
+  fuelType     FuelType  @relation(fields: [fuelTypeId], references: [id])
+  fuelTypeId   String
+  pricePerUnit Decimal
+  minQuantity  Int
+  maxQuantity  Int?
+  deliveryDays Int?
+  validFrom    DateTime
+  validTo      DateTime?
+  active       Boolean   @default(true)
+  leads        Lead[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PostalZone {
+  id       String @id @default(cuid())
+  dealer   Dealer @relation(fields: [dealerId], references: [id])
+  dealerId String
+  plzFrom  String
+  plzTo    String
+}
+
+model PostalCache {
+  plz       String   @id
+  state     String
+  district  String
+  lat       Decimal
+  lng       Decimal
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id           String       @id @default(cuid())
+  listing      PriceListing @relation(fields: [listingId], references: [id])
+  listingId    String
+  sessionToken String
+  ipHash       String?
+  plz          String
+  quantity     Int
+  clickedAt    DateTime     @default(now())
+}
+
+model PriceHistory {
+  id         String   @id @default(cuid())
+  fuelType   FuelType @relation(fields: [fuelTypeId], references: [id])
+  fuelTypeId String
+  avgPrice   Decimal
+  source     String
+  recordedAt DateTime @default(now())
+}
+
+model EnergyConversion {
+  id         String   @id @default(cuid())
+  fuelType   FuelType @relation(fields: [fuelTypeId], references: [id])
+  fuelTypeId String   @unique
+  unit       String
+  kWhPerUnit Decimal
+  source     String
+}
+
+enum Role {
+  DEALER
+  ADMIN
+}
+
+enum DealerStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  PAUSED
+}
