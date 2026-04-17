@@ -24,8 +24,11 @@ export default async function PreisindexPage({
   const trpcServer = await createServerClient();
   const fuelTypes = await trpcServer.fuelTypes.list();
 
+  type FuelType = (typeof fuelTypes)[number];
+  type PriceRecord = Awaited<ReturnType<typeof trpcServer.priceIndex.history>>[number];
+
   const histories = await Promise.all(
-    fuelTypes.map(async (fuel) => {
+    fuelTypes.map(async (fuel: FuelType) => {
       const records = await trpcServer.priceIndex.history({
         fuelTypeId: fuel.id,
         days: validDays,
@@ -61,8 +64,8 @@ export default async function PreisindexPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {histories.map(({ fuel, records }) => {
-          const data = records.map((r) => ({
+        {histories.map(({ fuel, records }: { fuel: FuelType; records: PriceRecord[] }) => {
+          const data = records.map((r: PriceRecord) => ({
             date: new Date(r.recordedAt).toLocaleDateString("de-DE", {
               day: "2-digit",
               month: "2-digit",

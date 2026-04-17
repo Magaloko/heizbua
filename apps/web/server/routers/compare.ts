@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@heizbua/db";
 import { router, publicProcedure } from "../trpc";
 
 export const compareRouter = router({
@@ -24,7 +25,7 @@ export const compareRouter = router({
 
       if (zones.length === 0) return [];
 
-      const dealerIds = [...new Set(zones.map((z) => z.dealerId))];
+      const dealerIds = [...new Set(zones.map((zone: { dealerId: string }) => zone.dealerId))];
 
       const listings = await ctx.prisma.priceListing.findMany({
         where: {
@@ -62,7 +63,14 @@ export const compareRouter = router({
         take: 50,
       });
 
-      const results = listings.map((listing) => {
+      type ListingWithRelations = Prisma.PriceListingGetPayload<{
+        include: {
+          dealer: { select: { id: true; name: true; logo: true; website: true; rating: true; reviewCount: true } };
+          fuelType: { select: { id: true; slug: true; label: true; unit: true; conversion: { select: { kWhPerUnit: true } } } };
+        };
+      }>;
+
+      const results = listings.map((listing: ListingWithRelations) => {
         const price = Number(listing.pricePerUnit);
         const totalPrice = price * quantity;
         const kWhPerUnit = listing.fuelType.conversion
@@ -89,6 +97,6 @@ export const compareRouter = router({
         };
       });
 
-      return results.sort((a, b) => a.totalPrice - b.totalPrice).slice(0, 20);
+      return results.sort((a: { totalPrice: number }, b: { totalPrice: number }) => a.totalPrice - b.totalPrice).slice(0, 20);
     }),
 });

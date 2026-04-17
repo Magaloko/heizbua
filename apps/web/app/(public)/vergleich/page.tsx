@@ -79,7 +79,7 @@ export default async function VergleichPage({
             </p>
           )}
 
-          {results.map((result, i) => (
+          {results.map((result: (typeof results)[number], i: number) => (
             <DealerCard
               key={result.listingId}
               result={result}

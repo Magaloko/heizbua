@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@heizbua/db";
 import { router, publicProcedure } from "../trpc";
 
 export const priceIndexRouter = router({
@@ -21,7 +22,7 @@ export const priceIndexRouter = router({
         orderBy: { recordedAt: "asc" },
       });
 
-      return records.map((r) => ({
+      return records.map((r: Prisma.PriceHistoryGetPayload<Record<string, never>>) => ({
         id: r.id,
         avgPrice: Number(r.avgPrice),
         recordedAt: r.recordedAt,

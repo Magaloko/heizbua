@@ -45,7 +45,7 @@ export function PriceChart({ data, unit, color = "#2563eb" }: Props) {
           width={70}
         />
         <Tooltip
-          formatter={(value: number) => [`${value.toFixed(3)} €/${unit}`, "Ø Preis"]}
+          formatter={(value) => [`${(value as number).toFixed(3)} €/${unit}`, "Ø Preis"]}
         />
         <Line
           type="monotone"
