@@ -18,9 +18,24 @@ type Props = {
   defaultFuelTypeId?: string;
   defaultPlz?: string;
   defaultQty?: number;
+  variant?: "hero" | "default";
 };
 
-export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQty }: Props) {
+const FUEL_ICONS: Record<string, string> = {
+  pellets: "🪵",
+  heizoel: "🛢️",
+  gas: "🔥",
+  waermepumpe: "♻️",
+  hackschnitzel: "🌲",
+};
+
+export function CompareForm({
+  fuelTypes,
+  defaultFuelTypeId,
+  defaultPlz,
+  defaultQty,
+  variant = "default",
+}: Props) {
   const router = useRouter();
   const [fuelTypeId, setFuelTypeId] = useState(
     defaultFuelTypeId ?? fuelTypes[0]?.id ?? ""
@@ -30,11 +45,12 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
   const [error, setError] = useState<string | null>(null);
 
   const selectedFuel = fuelTypes.find((f) => f.id === fuelTypeId);
+  const isHero = variant === "hero";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!/^\d{4,5}$/.test(plz)) {
-      setError("Bitte gültige PLZ eingeben (z. B. 80331 oder 1100)");
+      setError("Bitte gültige PLZ eingeben (z. B. 1100 oder 80331)");
       return;
     }
     const quantity = parseInt(qty, 10);
@@ -55,12 +71,15 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
             key={fuel.id}
             type="button"
             onClick={() => setFuelTypeId(fuel.id)}
-            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
               fuelTypeId === fuel.id
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-foreground hover:bg-muted"
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : isHero
+                  ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  : "border-border bg-background text-foreground hover:bg-muted"
             }`}
           >
+            <span className="text-base leading-none">{FUEL_ICONS[fuel.slug] ?? "⚡"}</span>
             {fuel.label}
           </button>
         ))}
@@ -68,19 +87,28 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
 
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="plz">PLZ</Label>
+          <Label
+            htmlFor="plz"
+            className={isHero ? "text-slate-300" : undefined}
+          >
+            PLZ
+          </Label>
           <Input
             id="plz"
             placeholder="z. B. 1100 oder 80331"
             value={plz}
-            onChange={(e) => setPlz(e.target.value)}
+            onChange={(e) => setPlz(e.target.value.replace(/\D/g, "").slice(0, 5))}
             maxLength={5}
             pattern="\d{4,5}"
             required
+            className={isHero ? "border-white/20 bg-white/10 text-white placeholder:text-slate-400 focus:border-primary" : undefined}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="qty">
+          <Label
+            htmlFor="qty"
+            className={isHero ? "text-slate-300" : undefined}
+          >
             Menge ({selectedFuel?.unit ?? "Einheit"})
           </Label>
           <Input
@@ -91,14 +119,17 @@ export function CompareForm({ fuelTypes, defaultFuelTypeId, defaultPlz, defaultQ
             value={qty}
             onChange={(e) => setQty(e.target.value)}
             required
+            className={isHero ? "border-white/20 bg-white/10 text-white placeholder:text-slate-400 focus:border-primary" : undefined}
           />
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
 
-      <Button type="submit" className="w-full">
-        Preise vergleichen
+      <Button type="submit" className="w-full font-semibold" size="lg">
+        Preise vergleichen →
       </Button>
     </form>
   );
