@@ -103,7 +103,7 @@ describe("dealerListings.create", () => {
       minQuantity: 500,
       maxQuantity: null,
       deliveryDays: null,
-      validFrom: new Date(),
+      validFrom: new Date("2026-01-01"),
       validTo: null,
     })).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
   });
@@ -112,7 +112,7 @@ describe("dealerListings.create", () => {
     const caller = createCaller(unauthCtx);
     await expect(caller.create({
       fuelTypeId: "ft-1", pricePerUnit: 0.285, minQuantity: 500,
-      maxQuantity: null, deliveryDays: null, validFrom: new Date(), validTo: null,
+      maxQuantity: null, deliveryDays: null, validFrom: new Date("2026-01-01"), validTo: null,
     })).rejects.toThrow("UNAUTHORIZED");
   });
 });
