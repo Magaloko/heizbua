@@ -22,7 +22,7 @@ export default async function PreisindexPage({
   const validDays = [30, 90, 365].includes(days) ? days : 90;
 
   const trpcServer = await createServerClient();
-  const fuelTypes = await trpcServer.fuelTypes.list();
+  const fuelTypes = await trpcServer.fuelTypes.list().catch(() => []);
 
   type FuelType = (typeof fuelTypes)[number];
   type PriceRecord = Awaited<ReturnType<typeof trpcServer.priceIndex.history>>[number];

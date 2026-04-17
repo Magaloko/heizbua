@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function HomePage() {
   const trpcServer = await createServerClient();
-  const fuelTypes = await trpcServer.fuelTypes.list();
+  const fuelTypes = await trpcServer.fuelTypes.list().catch(() => []);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
